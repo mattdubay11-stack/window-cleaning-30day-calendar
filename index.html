@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30-Day Window Cleaning Content Plan</title>
+<style>
+  :root{
+    --bg:#0f1115;
+    --card:#171a21;
+    --card2:#1f232c;
+    --accent:#3ba9ff;
+    --accent2:#22c55e;
+    --text:#e8ebf0;
+    --muted:#8b93a3;
+    --border:#2a2f3a;
+    --danger:#ef4444;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding:24px;
+  }
+  h1{font-size:22px;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:20px;}
+  .top-bar{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:16px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 18px;
+    margin-bottom:20px;
+  }
+  .top-bar label{font-size:13px;color:var(--muted);margin-right:6px;}
+  .top-bar input[type="date"]{
+    background:var(--card2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:6px 10px;
+    border-radius:8px;
+    font-size:14px;
+  }
+  .progress-wrap{flex:1;min-width:200px;}
+  .progress-label{font-size:13px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;}
+  .progress-bar{height:10px;background:var(--card2);border-radius:6px;overflow:hidden;border:1px solid var(--border);}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .3s ease;}
+  .reset-btn{
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--muted);
+    padding:6px 12px;
+    border-radius:8px;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .reset-btn:hover{border-color:var(--danger);color:var(--danger);}
+  .legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap;margin-bottom:18px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  .dot.pillar-proof{background:#3ba9ff;}
+  .dot.pillar-edu{background:#f59e0b;}
+  .dot.pillar-life{background:#a78bfa;}
+  .dot.sunday{background:#22c55e;}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:10px;
+  }
+  .day-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px;
+    cursor:pointer;
+    transition:border-color .15s,transform .1s;
+    position:relative;
+    min-height:90px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+  .day-card:hover{border-color:var(--accent);transform:translateY(-1px);}
+  .day-card.complete{border-color:var(--accent2);background:#132018;}
+  .day-num{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;}
+  .day-date{font-size:11px;color:var(--muted);}
+  .day-theme{font-size:13px;font-weight:600;margin-top:8px;line-height:1.3;}
+  .day-card.complete .day-theme{color:#8ee6b0;}
+  .check-badge{
+    width:18px;height:18px;border-radius:50%;
+    border:2px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;
+  }
+  .day-card.complete .check-badge{
+    background:var(--accent2);border-color:var(--accent2);color:#0f1115;font-weight:bold;
+  }
+  .sunday-tag{
+    font-size:10px;color:#22c55e;background:rgba(34,197,94,.12);
+    padding:1px 6px;border-radius:5px;margin-top:6px;display:inline-block;width:fit-content;
+  }
+  /* modal */
+  .overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.6);
+    align-items:flex-start;justify-content:center;
+    padding:30px 16px;
+    overflow-y:auto;
+    z-index:50;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    max-width:640px;
+    width:100%;
+    padding:22px 24px 28px;
+  }
+  .modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+  .modal-head h2{font-size:19px;margin:0;}
+  .modal-date{color:var(--muted);font-size:13px;margin-bottom:16px;}
+  .close-btn{
+    background:var(--card2);border:1px solid var(--border);color:var(--muted);
+    width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;line-height:1;
+  }
+  .close-btn:hover{color:var(--text);}
+  .section{
+    border-top:1px solid var(--border);
+    padding-top:12px;
+    margin-top:14px;
+  }
+  .section h3{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--accent);
+    margin:0 0 8px;
+  }
+  .section.edu h3{color:#f59e0b;}
+  .section.life h3{color:#a78bfa;}
+  .section.post h3{color:#22c55e;}
+  .item{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:5px 0;
+    font-size:14px;
+    line-height:1.4;
+    cursor:pointer;
+  }
+  .item input{
+    margin-top:3px;
+    width:16px;height:16px;
+    accent-color:var(--accent2);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .item span{transition:color .15s;}
+  .item input:checked + span{
+    color:var(--muted);
+    text-decoration:line-through;
+  }
+  .theme-callout{
+    background:var(--card2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-top:14px;
+    font-size:14px;
+  }
+  .theme-callout b{color:var(--accent);}
+  .weekly-yt{
+    background:rgba(34,197,94,.08);
+    border:1px solid rgba(34,197,94,.35);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-top:14px;
+    font-size:14px;
+  }
+  .weekly-yt b{color:#22c55e;}
+  footer{margin-top:26px;color:var(--muted);font-size:12px;text-align:center;}
+</style>
+</head>
+<body>
+
+<h1>30-Day Social Media Launch — Window Cleaning Recruiting Plan</h1>
+<div class="sub">Click any day to open its checklist. Progress saves automatically in this browser.</div>
+
+<div class="top-bar">
+  <div>
+    <label for="startDate">Day 1 start date</label>
+    <input type="date" id="startDate">
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Overall progress</span><span id="progressText">0 / 30 days</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+  <button class="reset-btn" id="resetBtn">Reset all progress</button>
+</div>
+
+<div class="legend">
+  <span><span class="dot pillar-proof"></span> Proof (70%)</span>
+  <span><span class="dot pillar-edu"></span> Education (20%)</span>
+  <span><span class="dot pillar-life"></span> Lifestyle (10%)</span>
+  <span><span class="dot sunday"></span> Sunday = weekly long YouTube video</span>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<footer>Window Cleaning Content Plan · Days 1–30 · Data stored locally in your browser (localStorage)</footer>
+
+<script>
+const STORAGE_KEY = "wc30_progress_v1";
+const START_KEY = "wc30_start_date_v1";
+
+const dayThemes = [
+  {d:1, theme:"Why I started window cleaning.", pillar:"life"},
+  {d:2, theme:"How much money I made today.", pillar:"proof"},
+  {d:3, theme:"Everything in my truck.", pillar:"edu"},
+  {d:4, theme:"Door knocking for six hours.", pillar:"proof"},
+  {d:5, theme:"Biggest mistake beginners make.", pillar:"edu"},
+  {d:6, theme:"Cleaning a mansion.", pillar:"proof"},
+  {d:7, theme:"Week 1 recap — revenue, hours, wins, losses.", pillar:"proof", recap:true},
+  {d:8, theme:"How I price jobs.", pillar:"edu"},
+  {d:9, theme:"Customer reactions.", pillar:"proof"},
+  {d:10, theme:"Best neighborhoods.", pillar:"edu"},
+  {d:11, theme:"How to get customers.", pillar:"edu"},
+  {d:12, theme:"Tools I use.", pillar:"edu"},
+  {d:13, theme:"Rain day — what happens.", pillar:"life"},
+  {d:14, theme:"Week 2 recap.", pillar:"proof", recap:true},
+  {d:15, theme:"Most expensive house.", pillar:"proof"},
+  {d:16, theme:"Worst job ever.", pillar:"proof"},
+  {d:17, theme:"My sales script.", pillar:"edu"},
+  {d:18, theme:"How much profit I keep.", pillar:"edu"},
+  {d:19, theme:"Big mistake I made.", pillar:"edu"},
+  {d:20, theme:"Cleaning impossible windows.", pillar:"proof"},
+  {d:21, theme:"Week 3 recap.", pillar:"proof", recap:true},
+  {d:22, theme:"A day in my life.", pillar:"life"},
+  {d:23, theme:"How I got my first customer.", pillar:"edu"},
+  {d:24, theme:"Equipment breakdown.", pillar:"edu"},
+  {d:25, theme:"Customer questions.", pillar:"proof"},
+  {d:26, theme:"Answering hate comments.", pillar:"life"},
+  {d:27, theme:"How much I spent today.", pillar:"edu"},
+  {d:28, theme:"How I stay motivated.", pillar:"life"},
+  {d:29, theme:"Lessons after six months.", pillar:"edu"},
+  {d:30, theme:"What I'm building next.", pillar:"life"},
+];
+
+function buildChecklist(day){
+  const items = [];
+  items.push({sec:"morning", label:"8 AM Story", tasks:[
+    "Post story: loading up the truck",
+    "Post story: coffee / morning routine shot",
+    "Post story: quick weather check",
+    "Post story: state today's dollar goal (e.g. \"$2,000 today\")"
+  ]});
+  items.push({sec:"proof", label:"Video 1 — Before & After", tasks:[
+    "Film the walk-up / approach to the house",
+    "Film knocking + talking to homeowner",
+    "Film setting up equipment",
+    "Film the BEFORE shot (dirty windows)",
+    "Film the AFTER shot (satisfying reveal)",
+    "Hook idea: \"This homeowner thought these windows were permanently stained.\""
+  ]});
+  items.push({sec:"edu", label:`Video 2 — Business (Today's topic: ${day.theme})`, tasks:[
+    `Film/record talking-head or voiceover on: "${day.theme}"`,
+    "Keep hook in first 3 seconds",
+    "End with a call to action (\"Follow to watch me build this business.\")"
+  ]});
+  items.push({sec:"life", label:"Video 3 — Lifestyle", tasks:[
+    "Grab 1-2 lifestyle clips (gym, truck, friends, driving, music, coffee)",
+    "Caption theme: building a business at a young age"
+  ]});
+  items.push({sec:"morning", label:"Between Houses", tasks:[
+    "30-sec talk-to-camera: \"What people don't realize about window cleaning...\""
+  ]});
+  items.push({sec:"morning", label:"Lunch Story", tasks:[
+    "Post story: earnings so far today",
+    "Post story: \"Halfway through today\""
+  ]});
+  items.push({sec:"morning", label:"Last Job of the Day", tasks:[
+    "Film sunset / finishing shot",
+    "Film the finished house",
+    "Film customer reaction",
+    "Film truck getting loaded up"
+  ]});
+  items.push({sec:"morning", label:"Night Story", tasks:[
+    "Post story: total money made today",
+    "Post story: one lesson learned today",
+    "Post story: tomorrow's goal"
+  ]});
+  items.push({sec:"post", label:"Post Everywhere", tasks:[
+    "Post 2-3 videos to TikTok",
+    "Post same videos to Instagram Reels",
+    "Post same videos to YouTube Shorts",
+    "Post same videos to Facebook Reels",
+    "Post a clip/thread to X (Twitter)",
+    "Post 10-20 Instagram Stories throughout the day"
+  ]});
+  return items;
+}
+
+const sectionMeta = {
+  morning: {title:"Daily Story Beats", cls:""},
+  proof: {title:"Video 1 · Proof", cls:""},
+  edu: {title:"Video 2 · Education", cls:"edu"},
+  life: {title:"Video 3 · Lifestyle", cls:"life"},
+  post: {title:"Posting Checklist", cls:"post"}
+};
+
+// Some browsers throw when accessing localStorage on file:// pages.
+// Fall back to an in-memory store so the app still works (just without
+// persistence) instead of silently breaking the whole render.
+let memoryStore = {};
+let storageBroken = false;
+function storageGet(key){
+  try{ return localStorage.getItem(key); }catch(e){ storageBroken = true; return (key in memoryStore) ? memoryStore[key] : null; }
+}
+function storageSet(key, val){
+  try{ localStorage.setItem(key, val); }catch(e){ storageBroken = true; memoryStore[key] = val; }
+}
+function storageRemove(key){
+  try{ localStorage.removeItem(key); }catch(e){ storageBroken = true; delete memoryStore[key]; }
+}
+
+function getProgress(){
+  try{ return JSON.parse(storageGet(STORAGE_KEY)) || {}; }catch(e){ return {}; }
+}
+function saveProgress(p){ storageSet(STORAGE_KEY, JSON.stringify(p)); }
+
+function getStartDate(){
+  let v = storageGet(START_KEY);
+  if(!v){
+    v = new Date().toISOString().slice(0,10);
+    storageSet(START_KEY, v);
+  }
+  return v;
+}
+function setStartDate(v){ storageSet(START_KEY, v); render(); }
+
+function dateForDay(dayNum){
+  const start = new Date(getStartDate() + "T00:00:00");
+  const d = new Date(start);
+  d.setDate(d.getDate() + (dayNum - 1));
+  return d;
+}
+function fmtDate(d){
+  return d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
+}
+function isSunday(d){ return d.getDay() === 0; }
+
+function taskKey(dayNum, sec, idx){ return `d${dayNum}_${sec}_${idx}`; }
+
+function dayComplete(dayNum){
+  const progress = getProgress();
+  const checklist = buildChecklist(dayThemes[dayNum-1]);
+  let total=0, done=0;
+  checklist.forEach(group=>{
+    group.tasks.forEach((t,idx)=>{
+      total++;
+      if(progress[taskKey(dayNum, group.sec, group.label+idx)]) done++;
+    });
+  });
+  return {total, done, complete: total>0 && done===total};
+}
+
+function render(){
+  document.getElementById("startDate").value = getStartDate();
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  let completedDays = 0;
+
+  dayThemes.forEach(day=>{
+    const d = dateForDay(day.d);
+    const status = dayComplete(day.d);
+    if(status.complete) completedDays++;
+
+    const card = document.createElement("div");
+    card.className = "day-card" + (status.complete ? " complete" : "");
+    card.innerHTML = `
+      <div>
+        <div class="day-num">
+          <span>Day ${day.d}</span>
+          <span class="check-badge">${status.complete ? "✓" : ""}</span>
+        </div>
+        <div class="day-date">${fmtDate(d)}</div>
+        <div class="day-theme">${day.theme}</div>
+      </div>
+      ${isSunday(d) ? '<span class="sunday-tag">+ Weekly YouTube</span>' : ''}
+    `;
+    card.addEventListener("click", ()=>openModal(day.d));
+    grid.appendChild(card);
+  });
+
+  document.getElementById("progressText").textContent = `${completedDays} / 30 days`;
+  document.getElementById("progressFill").style.width = (completedDays/30*100) + "%";
+}
+
+function openModal(dayNum){
+  const day = dayThemes[dayNum-1];
+  const d = dateForDay(dayNum);
+  const checklist = buildChecklist(day);
+  const progress = getProgress();
+
+  let html = `
+    <div class="modal-head">
+      <div>
+        <h2>Day ${day.d}</h2>
+        <div class="modal-date">${fmtDate(d)}</div>
+      </div>
+      <button class="close-btn" id="closeBtn">✕</button>
+    </div>
+    <div class="theme-callout"><b>Today's theme:</b> ${day.theme}</div>
+  `;
+
+  if(day.recap){
+    html += `<div class="theme-callout"><b>Recap post:</b> Cover total revenue, hours worked, biggest win, and biggest loss/lesson from the week.</div>`;
+  }
+  if(isSunday(d)){
+    html += `<div class="weekly-yt"><b>Weekly YouTube upload (10-20 min):</b> Post one long-form video today. Ideas: "I Tried Door Knocking for 12 Hours", "I Started a Window Cleaning Business With $300", "I Made $4,000 Cleaning Windows", "Complete Beginner Guide to Window Cleaning", "Everything I Learned After My First 100 Customers".</div>`;
+  }
+
+  checklist.forEach(group=>{
+    const meta = sectionMeta[group.sec];
+    html += `<div class="section ${meta.cls}"><h3>${group.sec==='edu' ? group.label : meta.title}</h3>`;
+    group.tasks.forEach((t, idx)=>{
+      const key = taskKey(dayNum, group.sec, group.label+idx);
+      const checked = progress[key] ? "checked" : "";
+      html += `
+        <label class="item">
+          <input type="checkbox" data-key="${key}" ${checked}>
+          <span>${t}</span>
+        </label>
+      `;
+    });
+    html += `</div>`;
+  });
+
+  const modal = document.getElementById("modal");
+  modal.innerHTML = html;
+  document.getElementById("overlay").classList.add("open");
+
+  document.getElementById("closeBtn").addEventListener("click", closeModal);
+
+  modal.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const p = getProgress();
+      p[cb.dataset.key] = cb.checked;
+      saveProgress(p);
+      render();
+      // keep modal state in sync without closing it
+      const stillOpen = document.getElementById("overlay").classList.contains("open");
+      if(stillOpen){
+        // refresh badge in header without rebuilding whole modal (cheap re-render is fine)
+      }
+    });
+  });
+}
+
+function closeModal(){
+  document.getElementById("overlay").classList.remove("open");
+}
+
+document.getElementById("overlay").addEventListener("click", (e)=>{
+  if(e.target.id === "overlay") closeModal();
+});
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape") closeModal();
+});
+
+document.getElementById("startDate").addEventListener("change", (e)=>{
+  setStartDate(e.target.value);
+});
+
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  if(confirm("Reset all checklist progress? This cannot be undone.")){
+    storageRemove(STORAGE_KEY);
+    render();
+  }
+});
+
+try{
+  render();
+}catch(err){
+  document.getElementById("grid").innerHTML =
+    '<div style="color:#ef4444;font-size:13px;">Something went wrong loading the calendar: ' +
+    String(err.message || err).replace(/</g,"&lt;") + '</div>';
+}
+
+if(storageBroken){
+  const warn = document.createElement("div");
+  warn.style.cssText = "background:#3a2a12;border:1px solid #f59e0b;color:#f5c97a;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;";
+  warn.textContent = "Note: this browser blocked saved progress for local files, so checkmarks won't persist after reload. The calendar and checklists still work fine.";
+  document.querySelector(".top-bar").insertAdjacentElement("afterend", warn);
+}
+</script>
+</body>
+</html>
