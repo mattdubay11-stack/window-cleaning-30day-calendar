@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>30-Day Window Cleaning Content Plan</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#3ba9ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WC Calendar">
 <style>
   :root{
     --bg:#0f1115;
@@ -185,6 +192,67 @@
     font-size:14px;
   }
   .weekly-yt b{color:#22c55e;}
+  .tracker-row{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+    flex-wrap:wrap;
+  }
+  .tracker-field{
+    flex:1;
+    min-width:140px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .tracker-field input{
+    background:var(--card2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:8px 10px;
+    border-radius:8px;
+    font-size:14px;
+  }
+  .caption-section h3{color:#a78bfa;}
+  .caption-box{
+    background:var(--card2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:10px;
+    position:relative;
+  }
+  .caption-label{
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin-bottom:6px;
+  }
+  .caption-text{
+    font-family:inherit;
+    font-size:13px;
+    line-height:1.5;
+    white-space:pre-wrap;
+    margin:0 0 8px;
+    padding-right:60px;
+  }
+  .copy-btn{
+    position:absolute;
+    top:10px;
+    right:10px;
+    background:var(--accent);
+    border:none;
+    color:#0f1115;
+    font-weight:600;
+    font-size:12px;
+    padding:5px 10px;
+    border-radius:6px;
+    cursor:pointer;
+  }
+  .copy-btn:hover{opacity:0.85;}
   footer{margin-top:26px;color:var(--muted);font-size:12px;text-align:center;}
 </style>
 </head>
@@ -225,36 +293,36 @@ const STORAGE_KEY = "wc30_progress_v1";
 const START_KEY = "wc30_start_date_v1";
 
 const dayThemes = [
-  {d:1, theme:"Why I started window cleaning.", pillar:"life"},
-  {d:2, theme:"How much money I made today.", pillar:"proof"},
-  {d:3, theme:"Everything in my truck.", pillar:"edu"},
-  {d:4, theme:"Door knocking for six hours.", pillar:"proof"},
-  {d:5, theme:"Biggest mistake beginners make.", pillar:"edu"},
-  {d:6, theme:"Cleaning a mansion.", pillar:"proof"},
-  {d:7, theme:"Week 1 recap — revenue, hours, wins, losses.", pillar:"proof", recap:true},
-  {d:8, theme:"How I price jobs.", pillar:"edu"},
-  {d:9, theme:"Customer reactions.", pillar:"proof"},
-  {d:10, theme:"Best neighborhoods.", pillar:"edu"},
-  {d:11, theme:"How to get customers.", pillar:"edu"},
-  {d:12, theme:"Tools I use.", pillar:"edu"},
-  {d:13, theme:"Rain day — what happens.", pillar:"life"},
-  {d:14, theme:"Week 2 recap.", pillar:"proof", recap:true},
-  {d:15, theme:"Most expensive house.", pillar:"proof"},
-  {d:16, theme:"Worst job ever.", pillar:"proof"},
-  {d:17, theme:"My sales script.", pillar:"edu"},
-  {d:18, theme:"How much profit I keep.", pillar:"edu"},
-  {d:19, theme:"Big mistake I made.", pillar:"edu"},
-  {d:20, theme:"Cleaning impossible windows.", pillar:"proof"},
-  {d:21, theme:"Week 3 recap.", pillar:"proof", recap:true},
-  {d:22, theme:"A day in my life.", pillar:"life"},
-  {d:23, theme:"How I got my first customer.", pillar:"edu"},
-  {d:24, theme:"Equipment breakdown.", pillar:"edu"},
-  {d:25, theme:"Customer questions.", pillar:"proof"},
-  {d:26, theme:"Answering hate comments.", pillar:"life"},
-  {d:27, theme:"How much I spent today.", pillar:"edu"},
-  {d:28, theme:"How I stay motivated.", pillar:"life"},
-  {d:29, theme:"Lessons after six months.", pillar:"edu"},
-  {d:30, theme:"What I'm building next.", pillar:"life"},
+  {d:1, theme:"Why I started window cleaning.", pillar:"life", caption:{main:"Started this business with barely enough for a squeegee and a dream. No experience, no help — just knocked on doors until someone said yes. Here's why I did it, and why I'm not stopping. Follow along as I build this from scratch.\n\n#windowcleaning #smallbusiness #entrepreneur", x:"No experience. No help. Just knocked on doors until someone said yes. Here's why I started a window cleaning business."}},
+  {d:2, theme:"How much money I made today.", pillar:"proof", caption:{main:"Made real money today cleaning windows. No boss, no clock to punch — just me, a truck, and houses that need cleaning. This is what building your own business actually looks like.\n\n#windowcleaning #makemoney #smallbusiness", x:"Made real money today cleaning windows. No boss. No clock. Just results. Here's the breakdown."}},
+  {d:3, theme:"Everything in my truck.", pillar:"edu", caption:{main:"Everything that lives in my truck — every tool I actually use to run a one-man window cleaning operation. No fluff, just what works.\n\n#windowcleaning #equipment #smallbusiness", x:"Here's literally everything in my truck that makes this business run. Save this if you're starting out."}},
+  {d:4, theme:"Door knocking for six hours.", pillar:"proof", caption:{main:"6 hours. One neighborhood. Every door. This is what it actually takes to build a client base from zero — no marketing budget, just showing up.\n\n#doortodoor #windowcleaning #hustle", x:"Spent 6 hours straight door-knocking today. Here's what actually happened."}},
+  {d:5, theme:"Biggest mistake beginners make.", pillar:"edu", caption:{main:"The #1 mistake I see beginners make in this business — and it's costing them customers before they even start.\n\n#windowcleaning #smallbusinesstips #mistakes", x:"The biggest mistake beginners make in window cleaning (I made it too):"}},
+  {d:6, theme:"Cleaning a mansion.", pillar:"proof", caption:{main:"Cleaned a mansion today — biggest house I've ever done. Here's what changes when the house (and the check) gets bigger.\n\n#windowcleaning #luxury #beforeandafter", x:"Cleaned the biggest house I've ever done today. Here's how it went."}},
+  {d:7, theme:"Week 1 recap — revenue, hours, wins, losses.", pillar:"proof", recap:true, caption:{main:"Week 1 in the books. Here's the real numbers — revenue, hours, what went right, what went wrong. No highlight reel, just the truth.\n\n#windowcleaning #smallbusiness #weeklyrecap", x:"Week 1 numbers are in. Here's exactly what building this business looked like this week."}},
+  {d:8, theme:"How I price jobs.", pillar:"edu", caption:{main:"How I actually price a job — the exact factors that decide what I quote before I ever pick up a squeegee.\n\n#windowcleaning #pricing #smallbusiness", x:"How I price every window cleaning job (the exact method):"}},
+  {d:9, theme:"Customer reactions.", pillar:"proof", caption:{main:"Nothing beats the look on someone's face when they see their windows after. This is why I do this.\n\n#windowcleaning #customerreaction #beforeandafter", x:"Her reaction to her windows after we finished says it all."}},
+  {d:10, theme:"Best neighborhoods.", pillar:"edu", caption:{main:"Not all neighborhoods are created equal. Here's how I decide where to knock to actually make money.\n\n#windowcleaning #doortodoor #salesstrategy", x:"The neighborhoods that actually make me money (and the ones that don't):"}},
+  {d:11, theme:"How to get customers.", pillar:"edu", caption:{main:"This is exactly how I get new customers — no ads, no website needed to start.\n\n#windowcleaning #howtogetclients #smallbusiness", x:"How I get customers with zero ad spend:"}},
+  {d:12, theme:"Tools I use.", pillar:"edu", caption:{main:"The tools that actually matter in this business — and the ones that are a waste of money.\n\n#windowcleaning #equipment #tools", x:"Every tool I use, ranked by how much it actually matters."}},
+  {d:13, theme:"Rain day — what happens.", pillar:"life", caption:{main:"Rain day. Here's what actually happens to a window cleaner's schedule (and income) when the weather doesn't cooperate.\n\n#windowcleaning #smallbusinesslife #rainyday", x:"What happens to my business on a rain day:"}},
+  {d:14, theme:"Week 2 recap.", pillar:"proof", recap:true, caption:{main:"Week 2 recap — the numbers, the lessons, the wins and the losses. Building this in public.\n\n#windowcleaning #smallbusiness #recap", x:"Week 2 is done. Here's the real numbers, no filter."}},
+  {d:15, theme:"Most expensive house.", pillar:"proof", caption:{main:"The most expensive house I've ever cleaned. Here's what a job like this actually pays.\n\n#windowcleaning #luxuryhomes #proof", x:"This was the most expensive house I've cleaned yet. Here's what it paid."}},
+  {d:16, theme:"Worst job ever.", pillar:"proof", caption:{main:"The worst job I've ever had — sometimes this business is not what the highlight reels show you.\n\n#windowcleaning #realtalk #smallbusiness", x:"The worst job I've had cleaning windows (it wasn't pretty):"}},
+  {d:17, theme:"My sales script.", pillar:"edu", caption:{main:"My actual sales script — word for word what I say when I knock on a door. Steal this.\n\n#windowcleaning #salesscript #doortodoor", x:"Here's my exact door-knocking sales script. Word for word."}},
+  {d:18, theme:"How much profit I keep.", pillar:"edu", caption:{main:"How much of what I make actually stays in my pocket after expenses. The real profit margin nobody talks about.\n\n#windowcleaning #profit #smallbusiness", x:"Here's how much profit I actually keep after expenses:"}},
+  {d:19, theme:"Big mistake I made.", pillar:"edu", caption:{main:"A mistake that cost me real money — sharing it so you don't make the same one.\n\n#windowcleaning #lessonslearned #smallbusiness", x:"This mistake cost me money. Learn from it so you don't repeat it:"}},
+  {d:20, theme:"Cleaning impossible windows.", pillar:"proof", caption:{main:"Windows everyone said couldn't be cleaned. Here's how we got them spotless anyway.\n\n#windowcleaning #beforeandafter #satisfying", x:"These windows looked impossible to clean. Watch what happened."}},
+  {d:21, theme:"Week 3 recap.", pillar:"proof", recap:true, caption:{main:"Week 3 recap — three weeks into building this business in public. Here's where we stand.\n\n#windowcleaning #smallbusiness #recap", x:"Week 3 numbers are in. Here's the full breakdown."}},
+  {d:22, theme:"A day in my life.", pillar:"life", caption:{main:"A full day in my life running this business — from sunrise to the last house.\n\n#windowcleaning #dayinthelife #entrepreneur", x:"A full day in my life building this business, start to finish."}},
+  {d:23, theme:"How I got my first customer.", pillar:"edu", caption:{main:"How I landed my very first customer with zero reputation and zero reviews.\n\n#windowcleaning #firstcustomer #startingfromzero", x:"This is exactly how I got my first customer, from zero:"}},
+  {d:24, theme:"Equipment breakdown.", pillar:"edu", caption:{main:"Full equipment breakdown — what everything costs and why I use it.\n\n#windowcleaning #equipment #startupcosts", x:"Full breakdown of my equipment and what it actually costs:"}},
+  {d:25, theme:"Customer questions.", pillar:"proof", caption:{main:"The questions customers ask me the most — answered.\n\n#windowcleaning #faq #customerservice", x:"The #1 question customers ask me before booking:"}},
+  {d:26, theme:"Answering hate comments.", pillar:"life", caption:{main:"Answering the hate comments — because not everyone believes this is real, and that's fine.\n\n#windowcleaning #realtalk #haters", x:"Answering the hate comments on my page. Some of these are wild."}},
+  {d:27, theme:"How much I spent today.", pillar:"edu", caption:{main:"What I actually spent today running this business — gas, supplies, everything.\n\n#windowcleaning #expenses #smallbusiness", x:"Here's everything I spent today running this business:"}},
+  {d:28, theme:"How I stay motivated.", pillar:"life", caption:{main:"How I stay motivated on the days I don't want to knock on one more door.\n\n#windowcleaning #motivation #mindset", x:"How I stay motivated on the hard days:"}},
+  {d:29, theme:"Lessons after six months.", pillar:"edu", caption:{main:"Six months in. Here's everything I've learned that I wish I knew on day one.\n\n#windowcleaning #lessonslearned #sixmonths", x:"6 months into this business. Here's everything I've learned."}},
+  {d:30, theme:"What I'm building next.", pillar:"life", caption:{main:"30 days of documenting this business. Here's what's next — and how you can be part of it.\n\n#windowcleaning #whatsnext #buildinginpublic", x:"30 days down. Here's what I'm building next — and how you can get in."}},
 ];
 
 function buildChecklist(day){
@@ -339,6 +407,53 @@ function getProgress(){
 }
 function saveProgress(p){ storageSet(STORAGE_KEY, JSON.stringify(p)); }
 
+function revenueKey(dayNum){ return `d${dayNum}_revenue`; }
+function hoursKey(dayNum){ return `d${dayNum}_hours`; }
+function getDayRevenue(dayNum){ const v = parseFloat(storageGet(revenueKey(dayNum))); return isNaN(v) ? null : v; }
+function getDayHours(dayNum){ const v = parseFloat(storageGet(hoursKey(dayNum))); return isNaN(v) ? null : v; }
+function setDayRevenue(dayNum, val){ if(val === "" || val === null){ storageSet(revenueKey(dayNum), ""); } else { storageSet(revenueKey(dayNum), String(val)); } }
+function setDayHours(dayNum, val){ if(val === "" || val === null){ storageSet(hoursKey(dayNum), ""); } else { storageSet(hoursKey(dayNum), String(val)); } }
+
+function sumRange(startDay, endDay){
+  let revenue = 0, hours = 0, daysLogged = 0;
+  for(let i = Math.max(1, startDay); i <= endDay; i++){
+    const r = getDayRevenue(i), h = getDayHours(i);
+    if(r !== null){ revenue += r; daysLogged++; }
+    if(h !== null){ hours += h; }
+  }
+  return {revenue, hours, daysLogged};
+}
+
+function copyText(text, btn){
+  const done = ()=>{
+    if(!btn) return;
+    const original = btn.textContent;
+    btn.textContent = "Copied!";
+    setTimeout(()=>{ btn.textContent = original; }, 1500);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+function fallbackCopy(text, done){
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    done();
+  }catch(e){
+    alert("Couldn't auto-copy. Please select and copy the text manually.");
+  }
+}
+
 function getStartDate(){
   let v = storageGet(START_KEY);
   if(!v){
@@ -359,6 +474,10 @@ function fmtDate(d){
   return d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'});
 }
 function isSunday(d){ return d.getDay() === 0; }
+
+function escapeHtml(str){
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
 function taskKey(dayNum, sec, idx){ return `d${dayNum}_${sec}_${idx}`; }
 
@@ -412,6 +531,8 @@ function openModal(dayNum){
   const d = dateForDay(dayNum);
   const checklist = buildChecklist(day);
   const progress = getProgress();
+  const revenue = getDayRevenue(dayNum);
+  const hours = getDayHours(dayNum);
 
   let html = `
     <div class="modal-head">
@@ -424,8 +545,44 @@ function openModal(dayNum){
     <div class="theme-callout"><b>Today's theme:</b> ${day.theme}</div>
   `;
 
+  html += `
+    <div class="tracker-row">
+      <label class="tracker-field">
+        <span>Money made today ($)</span>
+        <input type="number" inputmode="decimal" min="0" step="0.01" id="revenueInput" placeholder="0" value="${revenue !== null ? revenue : ""}">
+      </label>
+      <label class="tracker-field">
+        <span>Hours worked today</span>
+        <input type="number" inputmode="decimal" min="0" step="0.25" id="hoursInput" placeholder="0" value="${hours !== null ? hours : ""}">
+      </label>
+    </div>
+  `;
+
+  if(day.caption){
+    html += `
+      <div class="section caption-section">
+        <h3>Ready-to-Paste Caption</h3>
+        <div class="caption-box">
+          <div class="caption-label">TikTok / IG Reels / YT Shorts / FB Reels</div>
+          <pre class="caption-text" id="captionMain">${escapeHtml(day.caption.main)}</pre>
+          <button class="copy-btn" data-copy="main">Copy</button>
+        </div>
+        <div class="caption-box">
+          <div class="caption-label">X (Twitter)</div>
+          <pre class="caption-text" id="captionX">${escapeHtml(day.caption.x)}</pre>
+          <button class="copy-btn" data-copy="x">Copy</button>
+        </div>
+      </div>
+    `;
+  }
+
   if(day.recap){
-    html += `<div class="theme-callout"><b>Recap post:</b> Cover total revenue, hours worked, biggest win, and biggest loss/lesson from the week.</div>`;
+    const totals = sumRange(dayNum - 6, dayNum);
+    html += `<div class="theme-callout"><b>Recap post — this week's actual numbers:</b> $${totals.revenue.toFixed(2)} revenue, ${totals.hours} hours worked (${totals.daysLogged}/7 days logged). Cover biggest win and biggest loss/lesson from the week too.</div>`;
+  }
+  if(dayNum === 30){
+    const campaign = sumRange(1, 30);
+    html += `<div class="theme-callout"><b>30-day campaign totals:</b> $${campaign.revenue.toFixed(2)} total revenue, ${campaign.hours} total hours, ${campaign.daysLogged}/30 days logged. Worth sharing this full number in today's post or a pinned follow-up.</div>`;
   }
   if(isSunday(d)){
     html += `<div class="weekly-yt"><b>Weekly YouTube upload (10-20 min):</b> Post one long-form video today. Ideas: "I Tried Door Knocking for 12 Hours", "I Started a Window Cleaning Business With $300", "I Made $4,000 Cleaning Windows", "Complete Beginner Guide to Window Cleaning", "Everything I Learned After My First 100 Customers".</div>`;
@@ -452,6 +609,22 @@ function openModal(dayNum){
   document.getElementById("overlay").classList.add("open");
 
   document.getElementById("closeBtn").addEventListener("click", closeModal);
+
+  const revenueInput = document.getElementById("revenueInput");
+  const hoursInput = document.getElementById("hoursInput");
+  if(revenueInput){
+    revenueInput.addEventListener("change", ()=>{ setDayRevenue(dayNum, revenueInput.value); });
+  }
+  if(hoursInput){
+    hoursInput.addEventListener("change", ()=>{ setDayHours(dayNum, hoursInput.value); });
+  }
+
+  modal.querySelectorAll(".copy-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const text = btn.dataset.copy === "x" ? day.caption.x : day.caption.main;
+      copyText(text, btn);
+    });
+  });
 
   modal.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
     cb.addEventListener("change", ()=>{
@@ -496,6 +669,10 @@ try{
   document.getElementById("grid").innerHTML =
     '<div style="color:#ef4444;font-size:13px;">Something went wrong loading the calendar: ' +
     String(err.message || err).replace(/</g,"&lt;") + '</div>';
+}
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 
 if(storageBroken){
