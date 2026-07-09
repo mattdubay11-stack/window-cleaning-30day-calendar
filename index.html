@@ -771,6 +771,7 @@ function computeCumulativeSeries(){
 }
 
 function drawTrendChart(ctx, x0, y0, w, h, series, opts){
+  ctx.save();
   opts = opts || {};
   const lineColor = opts.lineColor || "#4db2ff";
   const gridColor = opts.gridColor || "rgba(255,255,255,0.08)";
@@ -852,6 +853,7 @@ function drawTrendChart(ctx, x0, y0, w, h, series, opts){
     const labelX = Math.min(last.x + 14, x0 + w - 90);
     ctx.fillText("$" + lastVal.toFixed(0), labelX, last.y - 14);
   }
+  ctx.restore();
 }
 
 async function buildTrendShareCanvas(){
@@ -901,6 +903,7 @@ async function buildTrendShareCanvas(){
   ctx.fillText(`through day ${series.length || 0} of 30`, canvas.width/2, 300);
 
   drawTrendChart(ctx, 110, 380, canvas.width - 220, 630, series, {fontSize: 22, lineWidth: 6});
+  ctx.textAlign = "center";
 
   const streak = computeStreak();
   ctx.fillStyle = "#fb923c";
