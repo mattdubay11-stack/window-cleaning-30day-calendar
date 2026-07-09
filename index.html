@@ -900,18 +900,28 @@ async function buildTrendShareCanvas(){
   ctx.font = "500 32px Inter, sans-serif";
   ctx.fillText(`through day ${series.length || 0} of 30`, canvas.width/2, 300);
 
-  drawTrendChart(ctx, 110, 380, canvas.width - 220, 700, series, {fontSize: 22, lineWidth: 6});
+  drawTrendChart(ctx, 110, 380, canvas.width - 220, 630, series, {fontSize: 22, lineWidth: 6});
 
   const streak = computeStreak();
   ctx.fillStyle = "#fb923c";
   ctx.font = "700 40px Inter, sans-serif";
-  ctx.fillText(`🔥 ${streak} day streak`, canvas.width/2, 1230);
+  ctx.fillText(`🔥 ${streak} day streak`, canvas.width/2, 1170);
 
   ctx.fillStyle = "#4db2ff";
-  ctx.font = "800 44px Inter, sans-serif";
+  fitText(ctx, "30-Day Content Calendar", canvas.width - 160, 44, "800");
   ctx.fillText("30-Day Content Calendar", canvas.width/2, canvas.height - 90);
 
   return canvas;
+}
+
+function fitText(ctx, text, maxWidth, startPx, weight){
+  let size = startPx;
+  ctx.font = `${weight} ${size}px Inter, sans-serif`;
+  while(ctx.measureText(text).width > maxWidth && size > 18){
+    size -= 2;
+    ctx.font = `${weight} ${size}px Inter, sans-serif`;
+  }
+  return size;
 }
 
 function openChartModal(){
