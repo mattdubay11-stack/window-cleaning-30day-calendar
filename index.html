@@ -67,6 +67,25 @@
     border-radius:10px;
     white-space:nowrap;
   }
+  .chart-btn{
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--muted);
+    padding:6px 12px;
+    border-radius:8px;
+    font-size:12px;
+    cursor:pointer;
+  }
+  .chart-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .chart-modal{max-width:680px;}
+  .chart-canvas-wrap{
+    background:var(--card2);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+    margin-top:8px;
+  }
+  #trendCanvas{width:100%;height:auto;display:block;}
   .top-bar label{font-size:13px;color:var(--muted);margin-right:6px;}
   .top-bar input[type="date"]{
     background:var(--card2);
@@ -355,6 +374,7 @@
     <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
   </div>
   <div class="streak-badge" id="streakBadge">🔥 0 day streak</div>
+  <button class="chart-btn" id="chartBtn">📈 Growth Chart</button>
   <button class="reset-btn" id="resetBtn">Reset all progress</button>
 </div>
 
@@ -369,6 +389,10 @@
 
 <div class="overlay" id="overlay">
   <div class="modal" id="modal"></div>
+</div>
+
+<div class="overlay" id="chartOverlay">
+  <div class="modal chart-modal" id="chartModal"></div>
 </div>
 
 <footer>Window Cleaning Content Plan · Days 1–30 · Data stored locally in your browser (localStorage)</footer>
@@ -734,6 +758,241 @@ async function buildRecapCanvas(dayNum){
   return canvas;
 }
 
+function computeCumulativeSeries(){
+  const plotThrough = Math.max(1, Math.min(30, todayDayNumber()));
+  let running = 0;
+  const series = [];
+  for(let i = 1; i <= plotThrough; i++){
+    const r = getDayRevenue(i);
+    running += (r !== null ? r : 0);
+    series.push({day: i, cumulative: running, logged: r !== null});
+  }
+  return series;
+}
+
+function drawTrendChart(ctx, x0, y0, w, h, series, opts){
+  opts = opts || {};
+  const lineColor = opts.lineColor || "#4db2ff";
+  const gridColor = opts.gridColor || "rgba(255,255,255,0.08)";
+  const textColor = opts.textColor || "#8b93a3";
+  const labelColor = opts.labelColor || "#eef1f5";
+  const fontSize = opts.fontSize || 20;
+  const totalDays = 30;
+
+  const maxVal = Math.max(1, ...series.map(p => p.cumulative)) * 1.15;
+  const xStep = w / (totalDays - 1);
+
+  ctx.textAlign = "left";
+  ctx.strokeStyle = gridColor;
+  ctx.lineWidth = 1;
+  const gridLines = 4;
+  for(let g = 0; g <= gridLines; g++){
+    const gy = y0 + h - (h * g / gridLines);
+    ctx.beginPath();
+    ctx.moveTo(x0, gy);
+    ctx.lineTo(x0 + w, gy);
+    ctx.stroke();
+    const val = maxVal * g / gridLines;
+    ctx.fillStyle = textColor;
+    ctx.font = `500 ${fontSize}px Inter, sans-serif`;
+    ctx.fillText("$" + Math.round(val), x0, gy - 6);
+  }
+
+  ctx.textAlign = "center";
+  [1, 5, 10, 15, 20, 25, 30].forEach(d=>{
+    const x = x0 + (d - 1) * xStep;
+    ctx.fillStyle = textColor;
+    ctx.font = `500 ${fontSize}px Inter, sans-serif`;
+    ctx.fillText("D" + d, x, y0 + h + fontSize + 10);
+  });
+
+  if(series.length > 0){
+    const pts = series.map(p => ({
+      x: x0 + (p.day - 1) * xStep,
+      y: y0 + h - (p.cumulative / maxVal) * h,
+      logged: p.logged,
+    }));
+
+    const fillGrad = ctx.createLinearGradient(0, y0, 0, y0 + h);
+    fillGrad.addColorStop(0, "rgba(77,178,255,0.28)");
+    fillGrad.addColorStop(1, "rgba(77,178,255,0)");
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, y0 + h);
+    pts.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(pts[pts.length-1].x, y0 + h);
+    ctx.closePath();
+    ctx.fillStyle = fillGrad;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    pts.forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = opts.lineWidth || 4;
+    ctx.lineJoin = "round";
+    ctx.stroke();
+
+    pts.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.logged ? 7 : 4, 0, Math.PI*2);
+      ctx.fillStyle = p.logged ? lineColor : "#3a4150";
+      ctx.fill();
+      if(p.logged){
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#0a0c10";
+        ctx.stroke();
+      }
+    });
+
+    const last = pts[pts.length-1];
+    const lastVal = series[series.length-1].cumulative;
+    ctx.textAlign = "left";
+    ctx.fillStyle = labelColor;
+    ctx.font = `700 ${fontSize+4}px Inter, sans-serif`;
+    const labelX = Math.min(last.x + 14, x0 + w - 90);
+    ctx.fillText("$" + lastVal.toFixed(0), labelX, last.y - 14);
+  }
+}
+
+async function buildTrendShareCanvas(){
+  const series = computeCumulativeSeries();
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1350;
+  const ctx = canvas.getContext("2d");
+  if(!ctx) return null;
+
+  if(document.fonts && document.fonts.load){
+    try{
+      await Promise.all([
+        document.fonts.load("700 40px Inter"),
+        document.fonts.load("800 46px Inter"),
+        document.fonts.load("500 20px Inter"),
+      ]);
+    }catch(e){}
+  }
+
+  ctx.fillStyle = "#0a0c10";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  let grad = ctx.createRadialGradient(200, 200, 50, 200, 200, 700);
+  grad.addColorStop(0, "rgba(77,178,255,0.16)");
+  grad.addColorStop(1, "rgba(77,178,255,0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 2;
+  drawRoundedRect(ctx, 40, 40, canvas.width - 80, canvas.height - 80, 48);
+  ctx.stroke();
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#4db2ff";
+  ctx.font = "700 44px Inter, sans-serif";
+  try{ ctx.letterSpacing = "4px"; }catch(e){}
+  ctx.fillText("30-DAY REVENUE GROWTH", canvas.width/2, 150);
+  try{ ctx.letterSpacing = "0px"; }catch(e){}
+
+  const totalSoFar = series.length ? series[series.length-1].cumulative : 0;
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "800 90px Inter, sans-serif";
+  ctx.fillText("$" + totalSoFar.toFixed(0), canvas.width/2, 260);
+  ctx.fillStyle = "#8b93a3";
+  ctx.font = "500 32px Inter, sans-serif";
+  ctx.fillText(`through day ${series.length || 0} of 30`, canvas.width/2, 300);
+
+  drawTrendChart(ctx, 110, 380, canvas.width - 220, 700, series, {fontSize: 22, lineWidth: 6});
+
+  const streak = computeStreak();
+  ctx.fillStyle = "#fb923c";
+  ctx.font = "700 40px Inter, sans-serif";
+  ctx.fillText(`🔥 ${streak} day streak`, canvas.width/2, 1230);
+
+  ctx.fillStyle = "#4db2ff";
+  ctx.font = "800 44px Inter, sans-serif";
+  ctx.fillText("30-Day Content Calendar", canvas.width/2, canvas.height - 90);
+
+  return canvas;
+}
+
+function openChartModal(){
+  const series = computeCumulativeSeries();
+  const total = series.length ? series[series.length-1].cumulative : 0;
+  const modal = document.getElementById("chartModal");
+  modal.innerHTML = `
+    <div class="modal-head">
+      <div>
+        <h2>Growth Chart</h2>
+        <div class="modal-date">$${total.toFixed(2)} total through day ${series.length} of 30</div>
+      </div>
+      <button class="close-btn" id="chartCloseBtn">✕</button>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="trendCanvas" width="1200" height="600"></canvas>
+    </div>
+    <button class="share-btn" id="shareChartBtn">📸 Share Growth Chart</button>
+  `;
+  document.getElementById("chartOverlay").classList.add("open");
+  document.getElementById("chartCloseBtn").addEventListener("click", closeChartModal);
+  document.getElementById("shareChartBtn").addEventListener("click", (e)=>shareTrendImage(e.target));
+
+  const canvas = document.getElementById("trendCanvas");
+  const ctx = canvas.getContext("2d");
+  if(ctx){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawTrendChart(ctx, 70, 30, canvas.width - 110, canvas.height - 110, series, {fontSize: 18});
+  }
+}
+function closeChartModal(){
+  document.getElementById("chartOverlay").classList.remove("open");
+}
+
+async function shareTrendImage(btn){
+  const originalText = btn.textContent;
+  btn.textContent = "Generating...";
+  btn.disabled = true;
+  try{
+    const canvas = await buildTrendShareCanvas();
+    if(!canvas || !canvas.toBlob){
+      throw new Error("Image generation isn't supported in this browser.");
+    }
+    canvas.toBlob(async (blob)=>{
+      if(!blob){
+        btn.textContent = originalText;
+        btn.disabled = false;
+        alert("Couldn't generate the image. Try again.");
+        return;
+      }
+      const filename = "growth-chart.png";
+      const file = (typeof File !== "undefined") ? new File([blob], filename, {type:"image/png"}) : null;
+      let shared = false;
+      if(file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({files:[file], title:"My growth"});
+          shared = true;
+        }catch(e){
+          shared = false;
+        }
+      }
+      if(!shared){
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url), 2000);
+      }
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }, "image/png");
+  }catch(e){
+    btn.textContent = originalText;
+    btn.disabled = false;
+    alert("Couldn't generate image: " + (e.message || e));
+  }
+}
+
 async function shareRecapImage(dayNum, btn){
   const originalText = btn.textContent;
   btn.textContent = "Generating...";
@@ -978,9 +1237,17 @@ function closeModal(){
 document.getElementById("overlay").addEventListener("click", (e)=>{
   if(e.target.id === "overlay") closeModal();
 });
-document.addEventListener("keydown", (e)=>{
-  if(e.key === "Escape") closeModal();
+document.getElementById("chartOverlay").addEventListener("click", (e)=>{
+  if(e.target.id === "chartOverlay") closeChartModal();
 });
+document.addEventListener("keydown", (e)=>{
+  if(e.key === "Escape"){
+    closeModal();
+    closeChartModal();
+  }
+});
+
+document.getElementById("chartBtn").addEventListener("click", openChartModal);
 
 document.getElementById("startDate").addEventListener("change", (e)=>{
   setStartDate(e.target.value);
