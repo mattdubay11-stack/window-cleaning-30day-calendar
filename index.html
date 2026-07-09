@@ -309,6 +309,22 @@
   .copy-btn:hover{opacity:0.85;}
   footer{margin-top:26px;color:var(--muted);font-size:12px;text-align:center;}
 
+  .share-btn{
+    width:100%;
+    margin-top:14px;
+    background:linear-gradient(135deg, var(--accent), #a78bfa);
+    border:none;
+    color:#0a0c10;
+    font-weight:700;
+    font-size:14px;
+    padding:12px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  .share-btn:hover{opacity:.9;transform:translateY(-1px);}
+  .share-btn:disabled{opacity:.6;cursor:default;transform:none;}
+
   .confetti-piece{
     position:fixed;
     top:-10px;
@@ -589,6 +605,182 @@ function escapeHtml(str){
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+function drawRoundedRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = text.split(" ");
+  let line = "";
+  let curY = y;
+  for(let n = 0; n < words.length; n++){
+    const testLine = line + words[n] + " ";
+    if(ctx.measureText(testLine).width > maxWidth && n > 0){
+      ctx.fillText(line, x, curY);
+      line = words[n] + " ";
+      curY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, curY);
+  return curY;
+}
+
+async function buildRecapCanvas(dayNum){
+  const day = dayThemes[dayNum-1];
+  const streak = computeStreak();
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1920;
+  const ctx = canvas.getContext("2d");
+  if(!ctx) return null;
+
+  if(document.fonts && document.fonts.load){
+    try{
+      await Promise.all([
+        document.fonts.load("800 150px Inter"),
+        document.fonts.load("700 40px Inter"),
+        document.fonts.load("600 40px Inter"),
+        document.fonts.load("500 34px Inter"),
+      ]);
+    }catch(e){}
+  }
+
+  ctx.fillStyle = "#0a0c10";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  let grad = ctx.createRadialGradient(200, 300, 50, 200, 300, 700);
+  grad.addColorStop(0, "rgba(77,178,255,0.18)");
+  grad.addColorStop(1, "rgba(77,178,255,0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  grad = ctx.createRadialGradient(900, 1600, 50, 900, 1600, 700);
+  grad.addColorStop(0, "rgba(34,197,94,0.14)");
+  grad.addColorStop(1, "rgba(34,197,94,0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 2;
+  drawRoundedRect(ctx, 40, 40, canvas.width - 80, canvas.height - 80, 48);
+  ctx.stroke();
+
+  ctx.textAlign = "center";
+
+  const isRecap = !!day.recap || dayNum === 30;
+  const label = dayNum === 30 ? "30-DAY CAMPAIGN RESULTS" : (day.recap ? `WEEK ${Math.ceil(dayNum/7)} RECAP` : `DAY ${dayNum} UPDATE`);
+  ctx.fillStyle = "#4db2ff";
+  ctx.font = "700 40px Inter, sans-serif";
+  try{ ctx.letterSpacing = "4px"; }catch(e){}
+  ctx.fillText(label, canvas.width/2, 260);
+  try{ ctx.letterSpacing = "0px"; }catch(e){}
+
+  let revenue, hoursVal, subLabel, subLabel2;
+  if(isRecap){
+    const totals = dayNum === 30 ? sumRange(1, 30) : sumRange(dayNum - 6, dayNum);
+    revenue = totals.revenue;
+    hoursVal = totals.hours;
+    subLabel = dayNum === 30 ? "total revenue" : "revenue this week";
+    subLabel2 = `${totals.hours} hrs worked · ${totals.daysLogged}/${dayNum === 30 ? 30 : 7} days logged`;
+  } else {
+    revenue = getDayRevenue(dayNum) || 0;
+    hoursVal = getDayHours(dayNum) || 0;
+    subLabel = "made today";
+    subLabel2 = `${hoursVal} hrs worked today`;
+  }
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "800 150px Inter, sans-serif";
+  ctx.fillText("$" + revenue.toFixed(revenue % 1 === 0 ? 0 : 2), canvas.width/2, 460);
+
+  ctx.fillStyle = "#8b93a3";
+  ctx.font = "500 36px Inter, sans-serif";
+  ctx.fillText(subLabel, canvas.width/2, 520);
+
+  ctx.fillStyle = "#eef1f5";
+  ctx.font = "600 40px Inter, sans-serif";
+  ctx.fillText(subLabel2, canvas.width/2, 620);
+
+  ctx.fillStyle = "rgba(251,146,60,0.15)";
+  drawRoundedRect(ctx, canvas.width/2 - 220, 700, 440, 110, 30);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(251,146,60,0.5)";
+  ctx.lineWidth = 2;
+  drawRoundedRect(ctx, canvas.width/2 - 220, 700, 440, 110, 30);
+  ctx.stroke();
+  ctx.fillStyle = "#fb923c";
+  ctx.font = "700 44px Inter, sans-serif";
+  ctx.fillText(`🔥 ${streak} day streak`, canvas.width/2, 770);
+
+  ctx.fillStyle = "#8b93a3";
+  ctx.font = "500 34px Inter, sans-serif";
+  wrapText(ctx, day.theme, canvas.width/2, 900, 800, 44);
+
+  ctx.fillStyle = "#4db2ff";
+  ctx.font = "800 46px Inter, sans-serif";
+  ctx.fillText("30-Day Content Calendar", canvas.width/2, canvas.height - 140);
+  ctx.fillStyle = "#8b93a3";
+  ctx.font = "500 30px Inter, sans-serif";
+  ctx.fillText(fmtDate(dateForDay(dayNum)), canvas.width/2, canvas.height - 90);
+
+  return canvas;
+}
+
+async function shareRecapImage(dayNum, btn){
+  const originalText = btn.textContent;
+  btn.textContent = "Generating...";
+  btn.disabled = true;
+  try{
+    const canvas = await buildRecapCanvas(dayNum);
+    if(!canvas || !canvas.toBlob){
+      throw new Error("Image generation isn't supported in this browser.");
+    }
+    canvas.toBlob(async (blob)=>{
+      if(!blob){
+        btn.textContent = originalText;
+        btn.disabled = false;
+        alert("Couldn't generate the image. Try again.");
+        return;
+      }
+      const filename = `day-${dayNum}-recap.png`;
+      const file = (typeof File !== "undefined") ? new File([blob], filename, {type:"image/png"}) : null;
+      let shared = false;
+      if(file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({files:[file], title:"My progress"});
+          shared = true;
+        }catch(e){
+          shared = false;
+        }
+      }
+      if(!shared){
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url), 2000);
+      }
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }, "image/png");
+  }catch(e){
+    btn.textContent = originalText;
+    btn.disabled = false;
+    alert("Couldn't generate image: " + (e.message || e));
+  }
+}
+
 function taskKey(dayNum, sec, idx){ return `d${dayNum}_${sec}_${idx}`; }
 
 function dayComplete(dayNum){
@@ -711,6 +903,7 @@ function openModal(dayNum){
     const campaign = sumRange(1, 30);
     html += `<div class="theme-callout"><b>30-day campaign totals:</b> $${campaign.revenue.toFixed(2)} total revenue, ${campaign.hours} total hours, ${campaign.daysLogged}/30 days logged. Worth sharing this full number in today's post or a pinned follow-up.</div>`;
   }
+  html += `<button class="share-btn" id="shareBtn">📸 Share Recap Image</button>`;
   if(isSunday(d)){
     html += `<div class="weekly-yt"><b>Weekly YouTube upload (10-20 min):</b> Post one long-form video today. Ideas: "I Tried Door Knocking for 12 Hours", "I Started a Window Cleaning Business With $300", "I Made $4,000 Cleaning Windows", "Complete Beginner Guide to Window Cleaning", "Everything I Learned After My First 100 Customers".</div>`;
   }
@@ -744,6 +937,11 @@ function openModal(dayNum){
   }
   if(hoursInput){
     hoursInput.addEventListener("change", ()=>{ setDayHours(dayNum, hoursInput.value); });
+  }
+
+  const shareBtn = document.getElementById("shareBtn");
+  if(shareBtn){
+    shareBtn.addEventListener("click", ()=>shareRecapImage(dayNum, shareBtn));
   }
 
   modal.querySelectorAll(".copy-btn").forEach(btn=>{
